@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\PichTabs_API.props" />
+</Project>
