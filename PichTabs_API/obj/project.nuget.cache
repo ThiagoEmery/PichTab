@@ -1,9 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "X6f7vhR1Lox+tJICmQbGOhZ1C09Z2wfoxBx7dr6gYLNHJeBbh/WfFpqbc2gFYRtNHAfX9GSJ+Aq1BtuDLXfzfw==",
+  "dgSpecHash": "bWSFLtYuHf+Ygi4IBn5fDdWyINJEAsVaSiFz6iN9ayorIuNDFWDv1rfhbLu/88dNtYqZz4F5L4lkf+anU4lLqg==",
   "success": true,
   "projectFilePath": "C:\\Users\\Thiago\\source\\repos\\PichTabs\\PichTabs_API\\PichTabs_API.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\Thiago\\.nuget\\packages\\automapper\\12.0.1\\automapper.12.0.1.nupkg.sha512",
+    "C:\\Users\\Thiago\\.nuget\\packages\\automapper.extensions.microsoft.dependencyinjection\\12.0.0\\automapper.extensions.microsoft.dependencyinjection.12.0.0.nupkg.sha512",
     "C:\\Users\\Thiago\\.nuget\\packages\\azure.core\\1.24.0\\azure.core.1.24.0.nupkg.sha512",
     "C:\\Users\\Thiago\\.nuget\\packages\\azure.identity\\1.6.0\\azure.identity.1.6.0.nupkg.sha512",
     "C:\\Users\\Thiago\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",

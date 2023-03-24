@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -14,27 +15,31 @@ namespace PichTabs_API.Controllers
     {
         private readonly ILogger<EquipoController> _logger;
         private readonly AplicationDbContext _db;
-        public EquipoController(ILogger<EquipoController> logger, AplicationDbContext db)
+        private readonly IMapper _mapper;
+        public EquipoController(ILogger<EquipoController> logger, AplicationDbContext db, IMapper mapper)
         {
 
             _logger = logger;
             _db = db;
-            
+            _mapper = mapper;
         }
 
         [HttpGet]
         [ProducesResponseType(200)]
-        public ActionResult<IEnumerable<EquipoDto>> GetEquipoModels()
+        public async Task <ActionResult<IEnumerable<EquipoDto>>> GetEquipoModels()
         {
             _logger.LogInformation("Obtener equipos");
-            return Ok(_db.equipoModels.ToList());
+
+            IEnumerable<EquipoModel> equipoList = await _db.equipoModels.ToListAsync();
+
+            return Ok(_mapper.Map<IEnumerable<EquipoDto>>(equipoList));
 
         }
         [HttpGet("id", Name = "GetEquipo")]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
-        public ActionResult<EquipoDto> GetEquipoModel(int id)
+        public async Task <ActionResult<EquipoDto>> GetEquipoModel(int id)
         {
             if (id == 0)
             {
@@ -42,64 +47,55 @@ namespace PichTabs_API.Controllers
                 return BadRequest();
             }
             // var equipo = EquipoStore.EquipoList.FirstOrDefault(v => v.Id == id);
-            var equipo = _db.equipoModels.FirstOrDefault(v => v.Id == id);
+            var equipo = await _db.equipoModels.FirstOrDefaultAsync(v => v.Id == id);
 
             if (equipo == null)
             {
                 return NotFound();
             }
-            return Ok(equipo);
+            return Ok(_mapper.Map<EquipoDto>(equipo));
         }
         [HttpPost]
         [ProducesResponseType(201)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
-        public ActionResult<EquipoDto> CrearEquipo([FromBody] EquipoDto equipoDto)
+        public async Task<ActionResult<EquipoDto>> CrearEquipo([FromBody] EquipoCreateDto createDto)
         {
             if(!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
             
-            if (equipoDto == null)
+            if (createDto == null)
             {
-                return BadRequest();
+                return BadRequest(createDto);
             }
-            if (equipoDto.Id > 0)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError);
-            }
+           
+            EquipoModel modelo = _mapper.Map<EquipoModel>(createDto);
 
-            EquipoModel modelo = new()
-            {
-                
-                Nombre = equipoDto.Nombre,
-                Sede = equipoDto.Sede,
-                Acronimo = equipoDto.Acronimo
-            };
 
-            _db.equipoModels.Add(modelo);
-            _db.SaveChanges();
+            await _db.equipoModels.AddAsync(modelo);
+            await _db.SaveChangesAsync();
 
-            return CreatedAtRoute("GetEquipo", new {id = equipoDto.Id}, equipoDto);
+            return CreatedAtRoute("GetEquipo", new {id = modelo.Id}, modelo);
         }
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public IActionResult DeleteEquipo(int id)
+        public async Task<IActionResult> DeleteEquipo(int id)
         {
             if(id==0)
             {
                 return BadRequest();
             }
-            var equipo = _db.equipoModels.FirstOrDefault(v => v.Id == id);
+            var equipo =await _db.equipoModels.FirstOrDefaultAsync(v => v.Id == id);
             if(equipo == null)
             {
                 return NotFound();
             }
             _db.equipoModels.Remove(equipo);
-            _db.SaveChanges();
+           await _db.SaveChangesAsync();
 
             return NoContent();
         }
@@ -107,47 +103,36 @@ namespace PichTabs_API.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public IActionResult UpdateEquipo(int id, [FromBody] EquipoDto equipoDto)
+        public async Task<IActionResult> UpdateEquipo(int id, [FromBody] EquipoUpdateDto updateDto)
         {
-            if(equipoDto==null || id!=equipoDto.Id)
+            if(updateDto==null || id!=updateDto.Id)
             {
                 return BadRequest();
             }
-            //var equipo = EquipoStore.EquipoList.FirstOrDefault(v => v.Id == id);
-            //equipo.Nombre = equipoDto.Nombre;
-            //equipo.Sede = equipoDto.Sede;
-            //equipo.Acronimo = equipoDto.Acronimo;
+            
 
-            EquipoModel modelo = new()
-            {
-                Id = equipoDto.Id,
-                Nombre = equipoDto.Nombre,
-                Sede = equipoDto.Sede,
-                Acronimo = equipoDto.Acronimo
-            };
+            EquipoModel modelo = _mapper.Map<EquipoModel>(updateDto);
+
+            
             _db.equipoModels.Update(modelo);
-            _db.SaveChanges();
+            await _db.SaveChangesAsync();
             return NoContent();
         }
         [HttpPatch("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public IActionResult UpdatePartialEquipo(int id, JsonPatchDocument<EquipoDto> patchDto)
+        public async Task<IActionResult> UpdatePartialEquipo(int id, JsonPatchDocument<EquipoUpdateDto> patchDto)
         {
             if (patchDto == null || id == 0)
             {
                 return BadRequest();
             }
-           var equipo = _db.equipoModels.AsNoTracking().FirstOrDefault(v => v.Id == id);
+           var equipo =await _db.equipoModels.AsNoTracking().FirstOrDefaultAsync(v => v.Id == id);
 
-            EquipoDto equipoDto = new()
-            {
-                Id = equipo.Id,
-                Nombre = equipo.Nombre,
-                Sede = equipo.Sede,
-                Acronimo = equipo.Acronimo
-            };
+            EquipoUpdateDto equipoDto = _mapper.Map<EquipoUpdateDto>(equipo);
+
+            
 
             if(equipoDto == null) return BadRequest();
 
@@ -160,15 +145,10 @@ namespace PichTabs_API.Controllers
                 return BadRequest(ModelState); 
             }
 
-            EquipoModel modelo = new()
-            {
-                Id = equipoDto.Id,
-                Nombre = equipoDto.Nombre,
-                Sede = equipoDto.Sede,
-                Acronimo = equipoDto.Acronimo
-            };
+            EquipoModel modelo = _mapper.Map<EquipoModel>(equipoDto);
+            
             _db.equipoModels.Add(modelo);
-            _db.SaveChanges();
+            await _db.SaveChangesAsync();
 
             return NoContent();
         }

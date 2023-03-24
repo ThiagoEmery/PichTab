@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using PichTabs_API;
 using PichTabs_API.Datos;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,6 +16,8 @@ builder.Services.AddDbContext<AplicationDbContext>(option =>
 {
     option.UseSqlServer(builder.Configuration.GetConnectionString("CadenaSQL"));
 });
+
+builder.Services.AddAutoMapper(typeof(MappingConfig));
 
 var app = builder.Build();
 
