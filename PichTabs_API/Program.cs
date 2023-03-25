@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using PichTabs_API;
 using PichTabs_API.Datos;
+using PichTabs_API.Repositorio;
+using PichTabs_API.Repositorio.IRepositorio;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +20,8 @@ builder.Services.AddDbContext<AplicationDbContext>(option =>
 });
 
 builder.Services.AddAutoMapper(typeof(MappingConfig));
+
+builder.Services.AddScoped<IEquipoRepositorio, EquipoRepositorio>();
 
 var app = builder.Build();
 

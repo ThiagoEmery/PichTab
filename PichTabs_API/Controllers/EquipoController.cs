@@ -65,6 +65,8 @@ namespace PichTabs_API.Controllers
             {
                 return BadRequest(ModelState);
             }
+
+            if(await _db.equipoModels.FirstOrDefaultAsync(v=>v.Nombre.ToLower() == createDto.Nombre.ToLower()) !=null)
             
             if (createDto == null)
             {
